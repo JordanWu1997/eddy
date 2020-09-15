@@ -250,9 +250,9 @@ class rotationmap:
         if 'corner' in plots:
             rotationmap._plot_corner(samples, labels)
         if 'bestfit' in plots:
-            self._plot_bestfit(medians, ivar=self.ivar)
+            bestfit_vkep = self._plot_bestfit(medians, ivar=self.ivar, return_vkep=True)
         if 'residual' in plots:
-            self._plot_residual(medians, ivar=self.ivar)
+            residual_vres = self._plot_residual(medians, ivar=self.ivar, return_vres=True)
 
         # Generate the output.
         if returns is None:
@@ -269,6 +269,15 @@ class rotationmap:
             to_return += [np.percentile(samples, [16, 50, 84], axis=0)]
         if 'dict' in returns:
             to_return += [medians]
+
+        #=============================================================
+        # New added by Jordan 2020.09.15
+        if 'vkep' in returns:
+            to_return += [bestfit_vkep]
+        if 'vres' in returns:
+            to_return += [residual_vres]
+        #=============================================================
+
         return to_return if len(to_return) > 1 else to_return[0]
 
     def set_prior(self, param, args, type='flat'):
@@ -1222,7 +1231,7 @@ class rotationmap:
         return [self.xaxis[0], self.xaxis[-1], self.yaxis[0], self.yaxis[-1]]
 
     def _plot_bestfit(self, params, ivar=None, residual=False,
-                      return_ax=False):
+                      return_ax=False, return_vkep=False):
         """Plot the best-fit model."""
         import matplotlib.pyplot as plt
         ax = plt.subplots()[1]
@@ -1244,7 +1253,14 @@ class rotationmap:
         if return_ax:
             return ax
 
-    def _plot_residual(self, params, ivar=None, return_ax=False):
+        #=================================================
+        # Added by Jordan 2020.0915
+        if return_vkep:
+            return vkep
+        #=================================================
+
+    def _plot_residual(self, params, ivar=None, return_ax=False,
+                       return_vres=False):
         """Plot the residual from the provided model."""
         import matplotlib.cm as cm
         import matplotlib.pyplot as plt
@@ -1268,6 +1284,12 @@ class rotationmap:
         self._gentrify_plot(ax)
         if return_ax:
             return ax
+
+        #=================================================
+        # Added by Jordan 2020.0915
+        if return_vres:
+            return vres
+        #=================================================
 
     def plot_surface(self, ax=None, x0=0.0, y0=0.0, inc=0.0, PA=0.0, z0=0.0,
                      psi=0.0, r_cavity=0.0, r_taper=None, q_taper=None,
